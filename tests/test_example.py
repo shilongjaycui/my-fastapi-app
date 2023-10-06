@@ -2,6 +2,7 @@ import pytest
 
 from my_fastapi_app.example import hello
 
+
 @pytest.mark.parametrize(
     ("name", "expected"),
     [
