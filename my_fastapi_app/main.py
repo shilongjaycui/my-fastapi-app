@@ -91,7 +91,7 @@ async def get_model(model_name: ModelName):
 @app.put("/items/{item_id}")
 async def create_item(item_id: int,
                       item: Item,
-                      q: str | None = None) -> dict[str, any]:
+                      q: str | None = None) -> dict:
     """Create an item.
 
     Args:
