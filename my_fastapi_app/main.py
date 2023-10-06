@@ -1,6 +1,5 @@
 """My FastAPI app."""
 
-from typing import Union
 from enum import Enum
 
 from fastapi import FastAPI
@@ -21,9 +20,6 @@ class ModelName(str, Enum):
     lenet = "lenet"
 
 
-app: FastAPI = FastAPI()
-
-
 class Item(BaseModel):
     """This is the dataclass for items.
 
@@ -32,8 +28,12 @@ class Item(BaseModel):
     """
 
     name: str
+    description: str | None = None
     price: float
-    is_offer: Union[bool, None] = None
+    tax: float | None = None
+
+
+app: FastAPI = FastAPI()
 
 
 @app.get("/")
@@ -71,24 +71,6 @@ def running_away_with_dua_lipa():
         "her insta": "https://www.instagram.com/dualipa/",
         "her store": "https://store.dualipa.com/",
     }
-
-
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
-    """Update an item by its ID.
-
-    Args:
-        item_id (int): ID of the item we'd like to update.
-        item (Item): An Item data object.
-
-    Returns:
-        dict: Name and ID of the item.
-    """
-    return {
-        "item_name": item.name,
-        "item_id": item_id,
-        "item_price": item.price,
-        }
 
 
 @app.get("/users/me")
@@ -131,3 +113,23 @@ async def get_model(model_name: ModelName):
         return {"model_name": model_name, "message": "LeCNN all the images"}
 
     return {"model_name": model_name, "message": "Have some residuals"}
+
+
+@app.put("/items/{item_id}")
+async def create_item(item_id: int,
+                      item: Item,
+                      q: str | None = None) -> dict[str, any]:
+    """Create an item.
+
+    Args:
+        item_id (int): ID of the item.
+        item (Item): The item.
+        q (str | None, optional): A query parameter. Defaults to None.
+
+    Returns:
+        dict: Information on the item.
+    """
+    result = {"item_id": item_id, **item.model_dump()}
+    if q:
+        result.update({"q": q})
+    return result
