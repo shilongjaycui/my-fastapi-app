@@ -8,7 +8,7 @@ project = PythonProject(
     version="0.1.0",
     deps=[
         'pytest@7.4.2',
-        'fastapi@0.103.2',
+        'fastapi[all]@0.103.2',
         'uvicorn[standard]@0.23.2',
     ]
 )
