@@ -1,9 +1,11 @@
 """My FastAPI app."""
 
+import time
 from enum import Enum
+from typing import Annotated
 
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import Body, FastAPI, Request
+from pydantic import BaseModel, Field
 
 
 class ModelName(str, Enum):
@@ -28,8 +30,15 @@ class Item(BaseModel):
     """
 
     name: str
-    description: str | None = None
-    price: float
+    description: str | None = Field(
+        default=None,
+        title="The description of the item",
+        max_length=300,
+    )
+    price: float = Field(
+        gt=0,
+        description="The price must be greater than zero"
+    )
     tax: float | None = None
 
 
@@ -46,19 +55,6 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int):
-    """Return the ID of the item.
-
-    Args:
-        item_id (int): The ID of the item
-
-    Returns:
-        dict: Item ID.
-    """
-    return {"item_id": item_id}
-
-
 @app.get("/dua_lipa")
 def running_away_with_dua_lipa():
     """Love Dua Lipa.
@@ -71,29 +67,6 @@ def running_away_with_dua_lipa():
         "her insta": "https://www.instagram.com/dualipa/",
         "her store": "https://store.dualipa.com/",
     }
-
-
-@app.get("/users/me")
-async def read_user_me():
-    """Get data about the current user.
-
-    Returns:
-        dict: ID of the current user.
-    """
-    return {"user_id": "the current user"}
-
-
-@app.get("/users/{user_id}")
-async def read_user(user_id: str):
-    """Get data about the user with the specified ID.
-
-    Args:
-        user_id (str): ID of the user.
-
-    Returns:
-        dict: ID of the user.
-    """
-    return {"user_id": user_id}
 
 
 @app.get("/models/{model_name}")
@@ -133,3 +106,51 @@ async def create_item(item_id: int,
     if q:
         result.update({"q": q})
     return result
+
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int):
+    """Return the ID of the item.
+
+    Args:
+        item_id (int): The ID of the item
+
+    Returns:
+        dict: Item ID.
+    """
+    return {"item_id": item_id}
+
+
+@app.put("/items/{item_id}")
+async def update_item(item_id: int,
+                      item: Annotated[Item, Body(embed=True)]) -> dict:
+    """Update an item.
+
+    Args:
+        item_id (int): ID of the item.
+        item (Annotated[Item, Body, optional): The item. Defaults to True)].
+
+    Returns:
+        dict: The item and its ID.
+    """
+    results = {"item_id": item_id, "item": item}
+    return results
+
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    """Modify the request (and the response).
+
+    Args:
+        request (Request): The request.
+        call_next (_type_): A function that passes the request
+                            to the path operation.
+
+    Returns:
+        _type_: The response.
+    """
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
