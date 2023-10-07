@@ -1,11 +1,21 @@
 """My FastAPI app."""
 
+import sys
+from pathlib import Path
 import time
 from enum import Enum
 from typing import Annotated
 
-from fastapi import Body, FastAPI, Request
+from fastapi import Body, FastAPI, Request, Depends
 from pydantic import BaseModel, Field
+
+print(f'\nPYTHONPATH (before): {sys.path}\n')
+tests_path = Path(sys.path[0])
+sys.path.append(str(tests_path.parent))
+print(f'\nPYTHONPATH (after): {sys.path}\n')
+
+from my_fastapi_app.dependencies import get_query_token, get_token_header
+from my_fastapi_app.routers import items, users
 
 
 class ModelName(str, Enum):
@@ -42,7 +52,9 @@ class Item(BaseModel):
     tax: float | None = None
 
 
-app: FastAPI = FastAPI()
+app: FastAPI = FastAPI(dependencies=[Depends(get_query_token)])
+app.include_router(users.router)
+app.include_router(items.router)
 
 
 @app.get("/")
