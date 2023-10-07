@@ -4,18 +4,15 @@ import sys
 from pathlib import Path
 import time
 from enum import Enum
-from typing import Annotated
 
-from fastapi import Body, FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends
 from pydantic import BaseModel, Field
 
-print(f'\nPYTHONPATH (before): {sys.path}\n')
 tests_path = Path(sys.path[0])
 sys.path.append(str(tests_path.parent))
-print(f'\nPYTHONPATH (after): {sys.path}\n')
-
-from my_fastapi_app.dependencies import get_query_token, get_token_header
-from my_fastapi_app.routers import items, users
+# pylint: disable=wrong-import-position
+from my_fastapi_app.dependencies import get_query_token  # noqa: E402
+from my_fastapi_app.routers import items, users  # noqa: E402
 
 
 class ModelName(str, Enum):
@@ -58,13 +55,13 @@ app.include_router(items.router)
 
 
 @app.get("/")
-def read_root():
-    """Return Hello World.
+async def root():
+    """Return Hello Bigger Applications.
 
     Returns:
-        dict: Hello World
+        dict: The message.
     """
-    return {"Hello": "World"}
+    return {"message": "Hello Bigger Applications!"}
 
 
 @app.get("/dua_lipa")
@@ -98,55 +95,6 @@ async def get_model(model_name: ModelName):
         return {"model_name": model_name, "message": "LeCNN all the images"}
 
     return {"model_name": model_name, "message": "Have some residuals"}
-
-
-@app.put("/items/{item_id}")
-async def create_item(item_id: int,
-                      item: Item,
-                      q: str | None = None) -> dict:
-    """Create an item.
-
-    Args:
-        item_id (int): ID of the item.
-        item (Item): The item.
-        q (str | None, optional): A query parameter. Defaults to None.
-
-    Returns:
-        dict: Information on the item.
-    """
-    result = {"item_id": item_id, **item.model_dump()}
-    if q:
-        result.update({"q": q})
-    return result
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int):
-    """Return the ID of the item.
-
-    Args:
-        item_id (int): The ID of the item
-
-    Returns:
-        dict: Item ID.
-    """
-    return {"item_id": item_id}
-
-
-@app.put("/items/{item_id}")
-async def update_item(item_id: int,
-                      item: Annotated[Item, Body(embed=True)]) -> dict:
-    """Update an item.
-
-    Args:
-        item_id (int): ID of the item.
-        item (Annotated[Item, Body, optional): The item. Defaults to True)].
-
-    Returns:
-        dict: The item and its ID.
-    """
-    results = {"item_id": item_id, "item": item}
-    return results
 
 
 @app.middleware("http")
