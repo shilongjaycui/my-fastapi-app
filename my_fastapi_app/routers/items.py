@@ -1,13 +1,10 @@
 """'items' submodule; e.g. 'import app.routers.items'."""
 
-from fastapi import APIRouter, Depends, HTTPException
-
-from ..dependencies import get_token_header
+from fastapi import APIRouter, HTTPException
 
 router: APIRouter = APIRouter(
     prefix="/items",
     tags=["items"],
-    dependencies=[Depends(get_token_header)],
     responses={404: {"description": "Not found"}},
 )
 

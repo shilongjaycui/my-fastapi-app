@@ -5,13 +5,12 @@ from pathlib import Path
 import time
 from enum import Enum
 
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request
 from pydantic import BaseModel, Field
 
-tests_path = Path(sys.path[0])
-sys.path.append(str(tests_path.parent))
+path = Path(sys.path[0])
+sys.path.append(str(path.parent))
 # pylint: disable=wrong-import-position
-from my_fastapi_app.dependencies import get_query_token  # noqa: E402
 from my_fastapi_app.routers import items, users  # noqa: E402
 
 
@@ -49,9 +48,9 @@ class Item(BaseModel):
     tax: float | None = None
 
 
-app: FastAPI = FastAPI(dependencies=[Depends(get_query_token)])
-app.include_router(users.router)
-app.include_router(items.router)
+app: FastAPI = FastAPI()
+app.include_router(router=users.router)
+app.include_router(router=items.router)
 
 
 @app.get("/")
